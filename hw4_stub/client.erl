@@ -110,7 +110,7 @@ do_join(State, Ref, ChatName) ->
 % IN PROGRESS!! :)
 	case maps:find(ChatName, State#cl_st.con_ch) of
 		error -> 
-			GUI_PID = whereis(element(1, State#cl_st)),
+			GUI_PID = whereis(State#cl_st.gui),
 			GUI_PID ! {result, self(), Ref, err};
 		{_ok, _Value} -> 
 			Server_PID = whereis(server),
