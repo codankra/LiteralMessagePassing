@@ -1,5 +1,5 @@
 -module(main).
--author("Elliot Wasem").
+-author("Elliot Wasem, Daniel Kramer, Matteo Bartalini").
 -export([start/0,start/1]).
 
 -spec start() -> _.

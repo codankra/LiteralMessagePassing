@@ -107,8 +107,15 @@ loop(State, Request, Ref) ->
 
 %% executes `/join` protocol from client perspective
 do_join(State, Ref, ChatName) ->
-    io:format("client:do_join(...): IMPLEMENT ME~n"),
-    {{dummy_target, dummy_response}, State}.
+% IN PROGRESS!! :)
+	case maps:find(ChatName, State#cl_st.con_ch) of
+		error -> 
+			GUI_PID = whereis(element(1, State#cl_st)),
+			GUI_PID ! {result, self(), Ref, err};
+		{_ok, _Value} -> 
+			Server_PID = whereis(server),
+			Server_PID ! {self(), Ref, join, ChatName}
+	end.
 
 %% executes `/leave` protocol from client perspective
 do_leave(State, Ref, ChatName) ->
@@ -117,7 +124,8 @@ do_leave(State, Ref, ChatName) ->
 
 %% executes `/nick` protocol from client perspective
 do_new_nick(State, Ref, NewNick) ->
-    io:format("client:do_new_nick(...): IMPLEMENT ME~n"),
+	
+	io:format("client:do_join(...): IMPLEMENT ME~n"),
     {{dummy_target, dummy_response}, State}.
 
 %% executes send message protocol from client perspective
@@ -135,3 +143,4 @@ do_new_incoming_msg(State, _Ref, CliNick, ChatName, Msg) ->
 do_quit(State, Ref) ->
     io:format("client:do_new_nick(...): IMPLEMENT ME~n"),
     {{dummy_target, dummy_response}, State}.
+
