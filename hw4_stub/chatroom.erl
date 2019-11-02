@@ -39,22 +39,29 @@ end,
     loop(NewState).
 
 %% This function should register a new client to this chatroom
-do_register(State, Ref, ClientPID, ClientNick) ->
-    io:format("chatroom:do_register(...): IMPLEMENT ME~n"),
-    State.
+do_register(State, Ref, ClientPID, ClientNick) -> %i think that state is a chat_st
+    %io:format("chatroom:do_register(...): IMPLEMENT ME~n"),
+    New_Map = maps:put(ClientPID, ClientNick, (State#chat_st.registrations)),
+    State#chat_st{registrations = New_Map}.
+    %State.
 
 %% This function should unregister a client from this chatroom
 do_unregister(State, ClientPID) ->
-    io:format("chatroom:do_unregister(...): IMPLEMENT ME~n"),
-    State.
+	New_Map = maps:remove(ClientPID, (State#chat_st.registrations)),
+    State#chat_st{registrations = New_Map}.
+    %io:format("chatroom:do_unregister(...): IMPLEMENT ME~n"),
+    %State.
 
 %% This function should update the nickname of specified client.
 do_update_nick(State, ClientPID, NewNick) ->
-    io:format("chatroom:do_update_nick(...): IMPLEMENT ME~n"),
-    State.
+	New_Map = maps:update_with(ClientPID, fun(_V) -> NewNick end, State#chat_st.registrations),
+	State#chat_st{registrations = New_Map}.
+    % io:format("chatroom:do_update_nick(...): IMPLEMENT ME~n"),
+    % State.
 
 %% This function should update all clients in chatroom with new message
 %% (read assignment specs for details)
 do_propegate_message(State, Ref, ClientPID, Message) ->
+	UsersPID = maps:keys(State#chat_st.registrations), %these are all the pids to send it to
     io:format("chatroom:do_propegate_message(...): IMPLEMENT ME~n"),
     State.

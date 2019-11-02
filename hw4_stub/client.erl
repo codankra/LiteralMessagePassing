@@ -124,9 +124,13 @@ do_leave(State, Ref, ChatName) ->
 
 %% executes `/nick` protocol from client perspective
 do_new_nick(State, Ref, NewNick) ->
-	
-	io:format("client:do_join(...): IMPLEMENT ME~n"),
-    {{dummy_target, dummy_response}, State}.
+	%case NewNick of
+	%	State#cl_st.nick -> {result, self(), Ref, err_same};
+	%	_ -> 
+			New_State = State#cl_st{nick = NewNick},
+			%io:format("client:do_join(...): IMPLEMENT ME~n"),
+			{{dummy_target, dummy_response}, New_State}.
+	%end.
 
 %% executes send message protocol from client perspective
 do_msg_send(State, Ref, ChatName, Message) ->
