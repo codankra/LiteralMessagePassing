@@ -110,12 +110,16 @@ do_join(State, Ref, ChatName) ->
 % IN PROGRESS!! :)
 	case maps:find(ChatName, State#cl_st.con_ch) of
 		error -> 
-			GUI_PID = whereis(State#cl_st.gui),
-			GUI_PID ! {result, self(), Ref, err};
-		{_ok, _Value} -> 
 			Server_PID = whereis(server),
-			Server_PID ! {self(), Ref, join, ChatName}
-	end.
+			Server_PID ! {self(), Ref, join, ChatName};
+		{_ok, _Value} -> 
+			{err, State}
+	end,
+	receive
+		{NewChat, Ref, connect, ChatHistory} -> 
+		% after server response
+
+
 
 %% executes `/leave` protocol from client perspective
 do_leave(State, Ref, ChatName) ->

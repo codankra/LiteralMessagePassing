@@ -60,8 +60,22 @@ loop(State) ->
 
 %% executes join protocol from server perspective
 do_join(ChatName, ClientPID, Ref, State) ->
-    io:format("server:do_join(...): IMPLEMENT ME~n"),
-    State.
+	{PID, NewState} = 
+	case maps:find(ChatName, State#serv_st.chatrooms) of 
+		{ok,PID} -> 
+			{PID, State};
+		error->
+			NewChat = ,
+			% ^^ "spawn a new chat, var=pid"
+			Chatrooms = maps:put(ChatName, NewChat, State#serv_st.chatrooms),
+			Regs = maps:put(ChatName, [], State#serv_st.registrations),
+			Nicks = State#serv_st.nicks,
+			{NewChat, #serv_st{chatrooms = Chatrooms, registrations = Regs, nicks = Nicks}}
+
+	end.
+	{ok, Clients} = maps:find(ChatName, NewState#serv_st.registrations),
+
+	
 
 %% executes leave protocol from server perspective
 do_leave(ChatName, ClientPID, Ref, State) ->
