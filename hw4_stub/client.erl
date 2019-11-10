@@ -118,6 +118,8 @@ do_join(State, Ref, ChatName) ->
 	receive
 		{NewChat, Ref, connect, ChatHistory} -> 
 		% after server response
+		{err, NewChat}
+	end.
 
 
 
