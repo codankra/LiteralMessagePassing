@@ -75,13 +75,41 @@ do_join(ChatName, ClientPID, Ref, State) ->
 	PID ! {self(), Ref, register, ClientPID, Clients}.
 %% executes leave protocol from server perspective
 do_leave(ChatName, ClientPID, Ref, State) ->
-    io:format("server:do_leave(...): IMPLEMENT ME~n"),
-    State.
+	% get ChatRoom pid
+	ChatPID = maps:get(ChatName, State#serv_st.chatrooms), 
+	% rm client from local record of chatroom regist
+	NewRegistrationsForChat = lists:remove(ClientPID, maps:get(ChatName, State#serv_st.registrations)),
+	NewState = State#serv_st{registrations = maps:put(ChatName, NewRegistrationsForChat, State#serv_st.registrations)},
+	% send message 
+	ChatPID!{self(), Ref, unregister, ClientPID},
+	% send message 2
+	ClientPID!{self(), Ref, ack_leave},
+    NewState.
 
 %% executes new nickname protocol from server perspective
 do_new_nick(State, Ref, ClientPID, NewNick) ->
-    io:format("server:do_new_nick(...): IMPLEMENT ME~n"),
-    State.
+	AllNickNames = maps:values(State#serv_st.nicks),
+	case lists:member(NewNick, AllNickNames) of 
+		true -> ClientPID!{self(), Ref, err_nick_used},
+				State;
+		false -> 
+			NewNicks = maps:put(ClientPID, NewNick, State#serv_st.nicks),
+			Keys = maps:keys(State#serv_st.registrations),
+			lists:foreach(
+				fun (Elem) -> 	Val = maps:get(Elem, State#serv_st.registrations),
+								case lists:member(ClientPID, Val) of 
+									true -> 
+										ChatPID = maps:get(Val, State#serv_st.chatrooms), 
+										ChatPID!{self(), Ref, update_nick, ClientPID, NewNick};
+									false -> 
+										do_nothing
+								end
+							end, 
+
+				Keys),
+			NewState = State#serv_st{nicks = NewNicks},
+			NewState 
+	end.
 
 %% executes client quit protocol from server perspective
 do_client_quit(State, Ref, ClientPID) ->
