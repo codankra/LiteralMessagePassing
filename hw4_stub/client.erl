@@ -112,7 +112,7 @@ do_join(State, Ref, ChatName) ->
 		error -> 
 			Server_PID = whereis(server),
 			Server_PID ! {self(), Ref, join, ChatName};
-		{_ok, _Value} -> 
+		{ok, _Value} -> 
 			{err, State}
 	end,
 	receive
