@@ -116,9 +116,11 @@ do_join(State, Ref, ChatName) ->
 			{err, State}
 	end,
 	receive
-		{NewChat, Ref, connect, ChatHistory} -> 
-		% after server response
-		{err, NewChat}
+		{NewChat, Ref, connect, ChatHistory} ->
+		NewChatrooms = maps:put(ChatName, NewChat, State#cl_st.con_ch),
+		% New chatrooms put chatname and pid into con_ch
+		UpdatedState = State#cl_st{con_ch = NewChatrooms},
+		{ChatHistory, UpdatedState}
 	end.
 
 

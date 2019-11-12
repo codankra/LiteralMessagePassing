@@ -60,19 +60,27 @@ loop(State) ->
 
 %% executes join protocol from server perspective
 do_join(ChatName, ClientPID, Ref, State) ->
-	{PID, NewState} = 
+	{ChatPID, NewState} = 
 	case maps:find(ChatName, State#serv_st.chatrooms) of 
 		{ok, EPID} -> 
 			{EPID, State};
 		error->
-			NewChat = spawn(chatroom, start_chatroom, [ChatName]),
-			Chatrooms = maps:put(ChatName, NewChat, State#serv_st.chatrooms),
+			NewChatPID = spawn(chatroom, start_chatroom, [ChatName]),
+			Chatroomss = maps:put(ChatName, NewChat, State#serv_st.chatrooms),
 			Regs = maps:put(ChatName, [], State#serv_st.registrations),
 			Nicks = State#serv_st.nicks,
-			{NewChat, #serv_st{chatrooms = Chatrooms, registrations = Regs, nicks = Nicks}}
+			{NewChatPID, #serv_st{chatrooms = Chatroomss, registrations = Regs, nicks = Nicks}}
 	end,
 	{ok, Clients} = maps:find(ChatName, NewState#serv_st.registrations),
-	PID ! {self(), Ref, register, ClientPID, Clients}.
+	NList = maps:put(ChatPID, Clients, State#serv_st.registrations),
+	UpdateState = #serv_st{chatrooms = NewState#serv_st.chatrooms, registrations = NList, nicks = NewState#serv_st.nicks},
+	%  find clientNicks based on nicknames
+	ClientNicks = maps:find(ChatName, NewState#serv_st.nicks),
+	PID ! {self(), Ref, register, ClientPID, ClientNicks},
+	% return newnewstate
+	{UpdateState}.
+
+
 %% executes leave protocol from server perspective
 do_leave(ChatName, ClientPID, Ref, State) ->
 	% get ChatRoom pid
