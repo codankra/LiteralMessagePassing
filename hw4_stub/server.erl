@@ -66,7 +66,7 @@ do_join(ChatName, ClientPID, Ref, State) ->
 			{EPID, State};
 		error->
 			NewChatPID = spawn(chatroom, start_chatroom, [ChatName]),
-			Chatroomss = maps:put(ChatName, NewChat, State#serv_st.chatrooms),
+			Chatroomss = maps:put(ChatName, NewChatPID, State#serv_st.chatrooms),
 			Regs = maps:put(ChatName, [], State#serv_st.registrations),
 			Nicks = State#serv_st.nicks,
 			{NewChatPID, #serv_st{chatrooms = Chatroomss, registrations = Regs, nicks = Nicks}}
@@ -76,7 +76,7 @@ do_join(ChatName, ClientPID, Ref, State) ->
 	UpdateState = #serv_st{chatrooms = NewState#serv_st.chatrooms, registrations = NList, nicks = NewState#serv_st.nicks},
 	%  find clientNicks based on nicknames
 	ClientNicks = maps:find(ChatName, NewState#serv_st.nicks),
-	PID ! {self(), Ref, register, ClientPID, ClientNicks},
+	ChatPID ! {self(), Ref, register, ClientPID, ClientNicks},
 	% return newnewstate
 	{UpdateState}.
 
@@ -121,5 +121,44 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 
 %% executes client quit protocol from server perspective
 do_client_quit(State, Ref, ClientPID) ->
-    io:format("server:do_client_quit(...): IMPLEMENT ME~n"),
-    State.
+	NewNicks = maps:remove(ClientPID, State#serv_st.nicks),
+	lists:foreach(fun (Elem) -> 
+				case lists:member(ClientPID, maps:get(Elem, State#serv_st.registrations)) of 
+					false -> do_nothing;
+					true -> 
+						ChatPID = maps:get(Elem, State#serv_st.chatrooms),
+						ChatPID!{self(), Ref, unreigster, ClientPID}
+					end
+				end, 
+		maps:keys(State#serv_st.chatrooms)),
+	NewReg = maps:map(fun (Key, Val) -> lists:delete(ClientPID, Val) end, State#serv_st.registrations),
+	ClientPID!{self(), Ref, ack_quit},
+	NewState = State#serv_st{nicks = NewNicks, registrations = NewReg},
+	NewState. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
