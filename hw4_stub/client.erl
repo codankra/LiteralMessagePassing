@@ -141,7 +141,8 @@ do_msg_send(State, Ref, ChatName, Message) ->
 	GUIPID = State#cl_st.gui,
 	ChatPID!{self(), Ref, message, Message},
 	receive 
-		{Self, Ref, ack_msg} -> GUIPID!{result, self(), Ref, {msg_sent, State#cl_st.nick}}
+		{Self, Ref, ack_msg} -> 
+		{{msg_sent, State#cl_st.nick}, State}
 	end.
     %{{dummy_target, dummy_response}, State}.
 
