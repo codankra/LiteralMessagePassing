@@ -116,16 +116,16 @@ do_join(State, Ref, ChatName) ->
 	case maps:find(ChatName, State#cl_st.con_ch) of
 		error -> 
 			Server_PID = whereis(server),
-			Server_PID ! {self(), Ref, join, ChatName};
+			Server_PID ! {self(), Ref, join, ChatName},
+			receive
+				{NewChat, Ref, connect, ChatHistory} ->
+					NewChatrooms = maps:put(ChatName, NewChat, State#cl_st.con_ch),
+					% New chatrooms put chatname and pid into con_ch
+					UpdatedState = State#cl_st{con_ch = NewChatrooms},
+					{ChatHistory, UpdatedState}
+			end;
 		{ok, _Value} -> 
 			{err, State}
-	end,
-	receive
-		{NewChat, Ref, connect, ChatHistory} ->
-		NewChatrooms = maps:put(ChatName, NewChat, State#cl_st.con_ch),
-		% New chatrooms put chatname and pid into con_ch
-		UpdatedState = State#cl_st{con_ch = NewChatrooms},
-		{ChatHistory, UpdatedState}
 	end.
 
 
