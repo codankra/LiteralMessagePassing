@@ -71,8 +71,8 @@ do_join(ChatName, ClientPID, Ref, State) ->
 			Nicks = State#serv_st.nicks,
 			{NewChatPID, #serv_st{chatrooms = Chatroomss, registrations = Regs, nicks = Nicks}}
 	end,
-	{ok, Clients} = maps:find(ChatName, NewState#serv_st.registrations),
-	NList = maps:put(ChatPID, Clients, State#serv_st.registrations),
+	Clients = maps:get(ChatName, NewState#serv_st.registrations),
+	NList = maps:put(ChatName, [ClientPID] ++ [Clients], State#serv_st.registrations),
 	UpdateState = #serv_st{chatrooms = NewState#serv_st.chatrooms, registrations = NList, nicks = NewState#serv_st.nicks},
 	%  find clientNicks based on nicknames
 	ClientNicks = maps:find(ChatName, NewState#serv_st.nicks),
@@ -135,4 +135,3 @@ do_client_quit(State, Ref, ClientPID) ->
 	ClientPID!{self(), Ref, ack_quit},
 	NewState = State#serv_st{nicks = NewNicks, registrations = NewReg},
 	NewState. 
-	
