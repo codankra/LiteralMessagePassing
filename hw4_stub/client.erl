@@ -142,8 +142,13 @@ do_new_nick(State, Ref, NewNick) ->
 
 %% executes send message protocol from client perspective
 do_msg_send(State, Ref, ChatName, Message) ->
-    io:format("client:do_new_nick(...): IMPLEMENT ME~n"),
-    {{dummy_target, dummy_response}, State}.
+	ChatPID = maps:get(ChatName, State#cl_st.con_ch),
+	GUIPID = State#cl_st.gui,
+	ChatPID!{self(), Ref, message, Message},
+	receive 
+		{Self, Ref, ack_msg} -> GUIPID!{result, self(), Ref, {msg_sent, State#cl_st.nick}}
+	end.
+    %{{dummy_target, dummy_response}, State}.
 
 %% executes new incoming message protocol from client perspective
 do_new_incoming_msg(State, _Ref, CliNick, ChatName, Msg) ->
