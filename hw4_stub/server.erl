@@ -78,7 +78,7 @@ do_join(ChatName, ClientPID, Ref, State) ->
 	ClientNicks = maps:find(ChatName, NewState#serv_st.nicks),
 	ChatPID ! {self(), Ref, register, ClientPID, ClientNicks},
 	% return newnewstate
-	{UpdateState}.
+	UpdateState.
 
 
 %% executes leave protocol from server perspective
