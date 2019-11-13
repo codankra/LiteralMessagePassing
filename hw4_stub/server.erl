@@ -86,7 +86,7 @@ do_leave(ChatName, ClientPID, Ref, State) ->
 	% get ChatRoom pid
 	ChatPID = maps:get(ChatName, State#serv_st.chatrooms), 
 	% rm client from local record of chatroom regist
-	NewRegistrationsForChat = lists:remove(ClientPID, maps:get(ChatName, State#serv_st.registrations)),
+	NewRegistrationsForChat = lists:delete(ClientPID, maps:get(ChatName, State#serv_st.registrations)), %error here
 	NewState = State#serv_st{registrations = maps:put(ChatName, NewRegistrationsForChat, State#serv_st.registrations)},
 	% send message 
 	ChatPID!{self(), Ref, unregister, ClientPID},

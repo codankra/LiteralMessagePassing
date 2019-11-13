@@ -108,6 +108,7 @@ loop(State, Request, Ref) ->
 % err: two can't join same chat
 % can't do some commands (like nick) from chat. Can do whoami from chat
 % quit doesn't shut down
+% can't join a chat with previous messages
 
 
 %% executes `/join` protocol from client perspective
