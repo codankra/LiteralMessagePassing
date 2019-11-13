@@ -135,30 +135,4 @@ do_client_quit(State, Ref, ClientPID) ->
 	ClientPID!{self(), Ref, ack_quit},
 	NewState = State#serv_st{nicks = NewNicks, registrations = NewReg},
 	NewState. 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	
