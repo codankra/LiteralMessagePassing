@@ -105,9 +105,13 @@ loop(State, Request, Ref) ->
 	    {unhandled_request, State}
     end.
 
+% err: two can't join same chat
+% can't do some commands (like nick) from chat. Can do whoami from chat
+% quit doesn't shut down
+
+
 %% executes `/join` protocol from client perspective
 do_join(State, Ref, ChatName) ->
-% IN PROGRESS!! :)
 	case maps:find(ChatName, State#cl_st.con_ch) of
 		error -> 
 			Server_PID = whereis(server),
@@ -127,18 +131,37 @@ do_join(State, Ref, ChatName) ->
 
 %% executes `/leave` protocol from client perspective
 do_leave(State, Ref, ChatName) ->
-    io:format("client:do_leave(...): IMPLEMENT ME~n"),
-    {{dummy_target, dummy_response}, State}.
+	case maps:find(ChatName, State#cl_st.con_ch) of
+		error -> 
+			{err, State};
+		{ok, _Value} -> 
+			Server_PID = whereis(server),
+			Server_PID ! {self(), Ref, leave, ChatName}
+	end,
+	receive
+		{From, Ref, ack_leave} -> 
+		NewChatrooms = maps:remove(ChatName, State#cl_st.con_ch),
+		UpdatedState = State#cl_st{con_ch = NewChatrooms},
+		{ok, UpdatedState}
+	end.
+
 
 %% executes `/nick` protocol from client perspective
 do_new_nick(State, Ref, NewNick) ->
-	io:format("client:do_leave(...): IMPLEMENT ME~n"),
-    {{dummy_target, dummy_response}, State}.
+	case State#cl_st.nick of 
+		NewNick -> {err_same, State};
+		_anything -> 
+			Server_PID = whereis(server),
+			Server_PID ! {self(), Ref, nick, NewNick}
+	end,
+	receive 
+		{From, Ref, ok_nick} -> {ok_nick, State#cl_st{nick= NewNick}};
+		{From, Ref, err_nick_used} -> {err_nick_used, State}
+	end.
 
 %% executes send message protocol from client perspective
 do_msg_send(State, Ref, ChatName, Message) ->
 	ChatPID = maps:get(ChatName, State#cl_st.con_ch),
-	GUIPID = State#cl_st.gui,
 	ChatPID!{self(), Ref, message, Message},
 	receive 
 		{Self, Ref, ack_msg} -> 
@@ -156,6 +179,9 @@ do_new_incoming_msg(State, _Ref, CliNick, ChatName, Msg) ->
 do_quit(State, Ref) ->
 	ServerPID = whereis(server), 
 	ServerPID!{self(), Ref, quit}, 
-	GUIPID = State#cl_st.gui,
-	GUIPID!{self(), Ref, ack_quit},
-    exit(normal).
+	% GUIPID = State#cl_st.gui,
+	receive 
+		{From, Ref, ack_quit} -> State#cl_st.gui ! {self(),Ref, ack_quit}
+	end,
+	exit(normal).
+	% ^ try to send ack_quit to gui (in response) and send client process shutdown signal

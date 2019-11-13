@@ -115,6 +115,7 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 							end, 
 
 				Keys),
+			ClientPID!{self(), Ref, ok_nick},
 			NewState = State#serv_st{nicks = NewNicks},
 			NewState 
 	end.
