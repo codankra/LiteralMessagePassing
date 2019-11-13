@@ -107,7 +107,7 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 				fun (Elem) -> 	Val = maps:get(Elem, State#serv_st.registrations),
 								case lists:member(ClientPID, Val) of 
 									true -> 
-										ChatPID = maps:get(Val, State#serv_st.chatrooms), 
+										ChatPID = maps:get(Elem, State#serv_st.chatrooms), 
 										ChatPID!{self(), Ref, update_nick, ClientPID, NewNick};
 									false -> 
 										do_nothing
