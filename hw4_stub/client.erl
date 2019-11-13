@@ -184,7 +184,7 @@ do_quit(State, Ref) ->
 	ServerPID!{self(), Ref, quit}, 
 	% GUIPID = State#cl_st.gui,
 	receive 
-		{From, Ref, ack_quit} -> State#cl_st.gui ! {self(),Ref, ack_quit}
+		{From, Ref, ack_quit} -> whereis(list_to_atom(State#cl_st.gui))!{self(),Ref, ack_quit}
 	end,
-	exit(normal).
+	{shutdown, State}.
 	% ^ try to send ack_quit to gui (in response) and send client process shutdown signal
