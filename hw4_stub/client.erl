@@ -137,14 +137,15 @@ do_leave(State, Ref, ChatName) ->
 			{err, State};
 		{ok, _Value} -> 
 			Server_PID = whereis(server),
-			Server_PID ! {self(), Ref, leave, ChatName}
-	end,
-	receive
-		{From, Ref, ack_leave} -> 
-		NewChatrooms = maps:remove(ChatName, State#cl_st.con_ch),
-		UpdatedState = State#cl_st{con_ch = NewChatrooms},
-		{ok, UpdatedState}
+			Server_PID ! {self(), Ref, leave, ChatName},
+			receive
+				{From, Ref, ack_leave} -> 
+					NewChatrooms = maps:remove(ChatName, State#cl_st.con_ch),
+					UpdatedState = State#cl_st{con_ch = NewChatrooms},
+					{ok, UpdatedState}
+			end
 	end.
+	
 
 
 %% executes `/nick` protocol from client perspective
@@ -153,12 +154,13 @@ do_new_nick(State, Ref, NewNick) ->
 		NewNick -> {err_same, State};
 		_anything -> 
 			Server_PID = whereis(server),
-			Server_PID ! {self(), Ref, nick, NewNick}
-	end,
-	receive 
-		{From, Ref, ok_nick} -> {ok_nick, State#cl_st{nick= NewNick}};
-		{From, Ref, err_nick_used} -> {err_nick_used, State}
+			Server_PID ! {self(), Ref, nick, NewNick},
+			receive 
+				{From, Ref, ok_nick} -> {ok_nick, State#cl_st{nick= NewNick}};
+				{From, Ref, err_nick_used} -> {err_nick_used, State}
+			end
 	end.
+	
 
 %% executes send message protocol from client perspective
 do_msg_send(State, Ref, ChatName, Message) ->
